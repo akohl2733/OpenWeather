@@ -1,8 +1,10 @@
 import requests
-import datetime
+from datetime import datetime, timedelta
 from requests.structures import CaseInsensitiveDict
 
 
+# create loop to request input of desired location to play golf
+# determine whether or not it is something that will be found within geoapify
 while True:
     try:
         initial = input('What is the address of your desired course\n')
@@ -30,22 +32,38 @@ while True:
         print('please enter a valid address\n')
 
 
+# determine what the offset time is compared so we are able to accurately represent the locations time
+offset = lat_lon['features'][0]['properties']['timezone']['offset_DST']
+hours_diff = ''
+if offset[0] == '-':
+    hours_diff += offset[0]
+    if offset[1] != 0:
+        hours_diff += offset[1]
+    hours_diff += offset[2]
+else:
+    if offset[0] != 0:
+        hours_diff += offset[0]
+    hours_diff += offset[1]
+hours_diff = int(hours_diff) + 4
+
+
+# surface data of latitude and longitude
 longitude = lat_lon['features'][0]['properties']['lon']
 latitude = lat_lon['features'][0]['properties']['lat']
 
 
+# run openweather api and jsonify data
 weather_key = 'f557fd02f45c8e7873127cb3211b299e'
-
 weather = requests.get('https://api.openweathermap.org/data/2.5/weather?lat={0}&lon={1}&appid={2}'.format(latitude, longitude, weather_key))
 result = weather.json()
 
-dt = datetime.datetime.fromtimestamp(result['sys']['sunset']).time()
 
-print(result['name'] + ', ' + result['sys']['country'])
+
+# create variable describing the time of sunset using result from openweather and offset time difference
+# print result to confirm to use the location as well and sunset time
+dt = (datetime.fromtimestamp(result['sys']['sunset']) + timedelta(hours=hours_diff, minutes=0)).time()
+print('The location you submitted is -- ' + result['name'] + ', ' + result['sys']['country'])
 print(dt)
 
 
-# need to be able to access input so you can find exact latitude and longitude here (look up on google potential api)
-# need to be able to figure out why the time thing isnt work
-# turn time into a useable format based on location
 # calculate how many holes of golf we can get in on a given night
