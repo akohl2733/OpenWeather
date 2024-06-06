@@ -66,4 +66,25 @@ print('The location you submitted is -- ' + result['name'] + ', ' + result['sys'
 print(dt)
 
 
-# calculate how many holes of golf we can get in on a given night
+# prompt user for both what their tee time is as well as what their rate of play would be
+while True:
+    try:
+        tee_time = str(input('\nWhat is the tee time you have? ( use format [xx:xx] )\n'))
+        pace = float(input('\nHow long does it take you to play 9 holes of golf?\n(please enter a number and if applicable, use decimals)\n'))
+        break
+    except:
+        print('please enter an acceptable value here')
+
+
+# convert tee_time to a usable integer to work with so we can determine difference in time
+tt = tee_time.split(':')
+mins = (str((int(tt[1][:2]) / 60) * 100))[:2]
+if mins.isnumeric() == False:
+    mins = '0' + mins[0]
+print(float(tt[0] + '.' + mins))
+
+
+
+# want to focus on potentially instead determining difference in time between the sunset and tee time instead
+# determine the rate of time that it would take for each hole
+# divide difference between tee and sunset time by the per hole rate
