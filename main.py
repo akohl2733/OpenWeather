@@ -61,7 +61,8 @@ result = weather.json()
 
 # create variable describing the time of sunset using result from openweather and offset time difference
 # print result to confirm to use the location as well and sunset time
-dt = (datetime.fromtimestamp(result['sys']['sunset']) + timedelta(hours=hours_diff, minutes=0)).time()
+dt_og = (datetime.fromtimestamp(result['sys']['sunset']) + timedelta(hours=hours_diff, minutes=0))
+dt = dt_og.time()
 print('The location you submitted is -- ' + result['name'] + ', ' + result['sys']['country'])
 print(dt)
 
@@ -69,22 +70,37 @@ print(dt)
 # prompt user for both what their tee time is as well as what their rate of play would be
 while True:
     try:
-        tee_time = str(input('\nWhat is the tee time you have? ( use format [xx:xx] )\n'))
-        pace = float(input('\nHow long does it take you to play 9 holes of golf?\n(please enter a number and if applicable, use decimals)\n'))
+        tee_time = str(input('\nWhat is the tee time you have? ( please use military time format )\n'))
+        hours = int(tee_time.split(':')[0])
+        if hours < 17 or hours > int(str(dt).split(':')[0]):
+            raise ValueError
+        pace = float(input('\nHow many hours does it take you to play 9 holes of golf?\n( please enter a number and if applicable, use decimals )\n'))
         break
     except:
-        print('please enter an acceptable value here')
+        if ValueError:
+            print('\nThe time for your tee time is not possible.\nPlease make sure you are using military time and it is not past sunset.')
+        else:
+            print('please enter an acceptable value for both.\nDid you make sure your rate of play is numeric? ( ex. 2.25 )')
 
 
-# convert tee_time to a usable integer to work with so we can determine difference in time
-tt = tee_time.split(':')
-mins = (str((int(tt[1][:2]) / 60) * 100))[:2]
-if mins.isnumeric() == False:
-    mins = '0' + mins[0]
-print(float(tt[0] + '.' + mins))
+# find the amount of time you have between your tee time and sunset
+dt = datetime.strptime(str(dt), '%H:%M:%S')
+tee_time = tee_time.split(':')[0] + ':' + tee_time.split(':')[1][:2]
+tee_time = datetime.strptime(tee_time, '%H:%M')
+diff = dt - tee_time
 
 
+# convert your datetime to a float value to perform math
+times = str(diff).split(':')
+h = int(times[0])
+m = int(times[1]) / 60
+total_time = h+m
+rate = pace / 9
 
-# want to focus on potentially instead determining difference in time between the sunset and tee time instead
+
+# find final valye after dividing by your rate of play and print how many holes
+answer = total_time // rate
+print('You will get in at least {0} holes in before sunset'.format(answer))
+
 # determine the rate of time that it would take for each hole
 # divide difference between tee and sunset time by the per hole rate
